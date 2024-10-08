@@ -1,29 +1,35 @@
-document.addEventListener("touchstart",on_touch);
-document.addEventListener("mousedown",on_touch);
-var recognition=new webkitSpeechRecognition();
-recognition.lang='en-US';
+var recognition = new webkitSpeechRecognition();
+recognition.lang = 'en-US';
+recognition.continuous = true;
+recognition.interimResults = false;
+var recognition_started = false;
 
-function on_touch()
-{
-    if(recognition.start)
-    {
+document.getElementById("startBtn").addEventListener("click", startRecognition);
+document.getElementById("stopBtn").addEventListener("click", stopRecognition);
+
+function startRecognition() {
+    if (!recognition_started) {
         recognition.start();
-        recognition_started=true;
+        recognition_started = true;
+        document.getElementById("text").innerHTML += "Microfonul este pornit.<br>";
     }
 }
 
-function onend()
-{
-    recognition.stop();
-    recognition_started=false;
+function stopRecognition() {
+    if (recognition_started) {
+        recognition.stop();
+        recognition_started = false;
+        document.getElementById("text").innerHTML += "Microfonul a fost oprit.<br>";
+    }
 }
 
-recognition.onend=onend;
-recognition.onsoundend=onend;
-recognition.onspeechend=onend;
-recognition.onresult=on_results;
+recognition.onend = function() {
+    recognition_started = false;
+};
 
-function on_results(e)
-{
-    document.getElementById("text").innerHTML +="Ati rostit cuvantul: "+ e.results[0][0].transcript + ", acuratete:"+e.results[0][0].confidence + "<br>";
-}
+recognition.onresult = function(event) {
+    for (var i = event.resultIndex; i < event.results.length; i++) {
+        document.getElementById("text").innerHTML += "Ai rostit cuvantul: " +
+            event.results[i][0].transcript + ", acuratete: " + event.results[i][0].confidence + "<br>";
+    }
+};
